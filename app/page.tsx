@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Palette,
   ChevronDown,
@@ -8,6 +8,8 @@ import {
   Calendar,
   Camera,
   Brain,
+  Menu,
+  X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -32,7 +34,14 @@ interface CtaContent {
   button: string;
 }
 
+interface NavContent {
+  home: string;
+  services: string;
+  contact: string;
+}
+
 interface LanguageContent {
+  nav: NavContent;
   hero: HeroContent;
   services: ServiceItem[];
   cta: CtaContent;
@@ -40,6 +49,11 @@ interface LanguageContent {
 
 const content: Record<string, LanguageContent> = {
   ar: {
+    nav: {
+      home: "الرئيسية",
+      services: "الخدمات",
+      contact: "تواصل معنا",
+    },
     hero: {
       title: "خدماتنا المتكاملة",
       subtitle: "قدرات متكاملة لصناعة الحلول والأثر",
@@ -117,6 +131,11 @@ const content: Record<string, LanguageContent> = {
     },
   },
   en: {
+    nav: {
+      home: "Home",
+      services: "Services",
+      contact: "Contact",
+    },
     hero: {
       title: "Our Integrated Services",
       subtitle: "Integrated Capabilities for Creating Solutions and Impact",
@@ -197,29 +216,108 @@ const content: Record<string, LanguageContent> = {
 
 export default function ServicesPage() {
   const [language, setLanguage] = useState<"ar" | "en">("ar");
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const t = content[language];
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const navLinks = [
+    { label: t.nav.home, href: "#home" },
+    { label: t.nav.services, href: "#services" },
+    { label: t.nav.contact, href: "#contact" },
+  ];
 
   return (
     <div
       className="min-h-screen bg-black text-white font-sans"
       dir={language === "ar" ? "rtl" : "ltr"}
     >
-      {/* Language Toggle */}
-      <div className="fixed top-6 right-6 z-50">
-        <button
-          onClick={() => setLanguage(language === "ar" ? "en" : "ar")}
-          className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full hover:bg-white/20 transition-all border border-white/20"
-        >
-          <Globe size={18} />
-          <span className="text-sm font-medium">
-            {language === "ar" ? "EN" : "ع"}
-          </span>
-        </button>
-      </div>
+      {/* Navbar */}
+      <nav
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          scrolled
+            ? "bg-black/80 backdrop-blur-md border-b border-white/10"
+            : "bg-transparent"
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
+          {/* Logo */}
+          <a href="#home" className="text-xl font-bold tracking-wider">
+            CORE<span className="text-red-600">.</span>
+            <span className="text-sm font-normal text-gray-400 ms-1">Media</span>
+          </a>
+
+          {/* Desktop Nav Links */}
+          <div className="hidden md:flex items-center gap-8">
+            {navLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                className="text-sm font-medium text-gray-300 hover:text-white transition-colors relative after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-0 after:bg-red-600 after:transition-all hover:after:w-full"
+              >
+                {link.label}
+              </a>
+            ))}
+
+            {/* Language Toggle */}
+            <button
+              onClick={() => setLanguage(language === "ar" ? "en" : "ar")}
+              className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full hover:bg-white/20 transition-all border border-white/20 text-sm"
+            >
+              <Globe size={14} />
+              <span className="font-medium">
+                {language === "ar" ? "EN" : "ع"}
+              </span>
+            </button>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="flex md:hidden items-center gap-3">
+            <button
+              onClick={() => setLanguage(language === "ar" ? "en" : "ar")}
+              className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-full hover:bg-white/20 transition-all border border-white/20 text-sm"
+            >
+              <Globe size={14} />
+              <span className="font-medium">
+                {language === "ar" ? "EN" : "ع"}
+              </span>
+            </button>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="text-white p-1"
+            >
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-black/95 backdrop-blur-md border-t border-white/10">
+            <div className="px-6 py-4 flex flex-col gap-4">
+              {navLinks.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-base font-medium text-gray-300 hover:text-white transition-colors py-2 border-b border-white/5"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+      </nav>
 
       {/* Hero Section */}
-      <section className="relative min-h-[60vh] flex items-center justify-center overflow-hidden">
+      <section id="home" className="relative min-h-[60vh] flex items-center justify-center overflow-hidden scroll-mt-16">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
           <div
@@ -262,7 +360,7 @@ export default function ServicesPage() {
       </section>
 
       {/* Services Sections */}
-      <section className="relative">
+      <section id="services" className="relative scroll-mt-16">
         {t.services.map((service, index) => {
           const ServiceIcon = service.icon;
           return (
@@ -359,8 +457,8 @@ export default function ServicesPage() {
         })}
       </section>
 
-      {/* CTA Section */}
-      <section className="relative py-32 bg-gradient-to-b from-zinc-950 to-black overflow-hidden">
+      {/* CTA / Contact Section */}
+      <section id="contact" className="relative py-32 bg-gradient-to-b from-zinc-950 to-black overflow-hidden scroll-mt-16">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
           <div
